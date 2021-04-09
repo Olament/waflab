@@ -40,4 +40,5 @@ func initAPI() {
 	beego.Router("/api/delete-testcase", &controllers.ApiController{}, "POST:DeleteTestcase")
 
 	beego.Router("/api/get-result", &controllers.ApiController{}, "GET:GetResult")
+	beego.Router("/api/get-docker-health", &controllers.ApiController{}, "GET:GetDockerHealth")
 }
