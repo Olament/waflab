@@ -5,6 +5,8 @@ package docker
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -21,6 +23,14 @@ const (
 	TaskStatusFinish  = 3 // finished, ready to be removed from taskStatus
 )
 
+var (
+	ErrInitDocker    = errors.New("docker/master: failed to initialize Docker client")
+	ErrInvalidMaster = errors.New("docker/worker: Master is not properly initialized")
+
+	ctx = context.Background()
+	cli *client.Client
+)
+
 type taskStatus struct {
 	status    int
 	numRetry  int
@@ -28,6 +38,7 @@ type taskStatus struct {
 }
 
 type Master struct {
+	success  bool
 	mux      sync.Mutex
 	taskChan chan *Task
 	status   map[string]*taskStatus // taskID -> taskStatus
@@ -66,6 +77,10 @@ func (m *Master) reportTask(task *Task, isDone bool, res []Response, err error) 
 
 // EXPOSED
 func (m *Master) InsertTask(hostname string, yamlFile string) ([]Response, error) {
+	if !m.success {
+		return nil, ErrInvalidMaster
+	}
+
 	resChan := make(chan []Response)
 	errChan := make(chan error)
 	id := strconv.FormatInt(time.Now().Unix(), 10)
@@ -99,10 +114,11 @@ func MakeMaster(numContainer int) *Master {
 	m.status = make(map[string]*taskStatus)
 	m.taskChan = make(chan *Task, 100)
 
-	ctx := context.Background()
-	cli, err := client.NewEnvClient()
-	if err != nil {
-		panic(err)
+	cli, _ = client.NewClientWithOpts(client.FromEnv)
+
+	if !GetMasterHealth() {
+		fmt.Printf("\033[31m%v\033[0m\n", ErrInitDocker)
+		return &m
 	}
 
 	reader, err := cli.ImagePull(ctx, "docker.io/olament/wafbench", types.ImagePullOptions{})
@@ -121,4 +137,12 @@ func MakeMaster(numContainer int) *Master {
 	}
 
 	return &m
+}
+
+func GetMasterHealth() bool {
+	if cli == nil { // client is not initialized
+		return false
+	}
+	_, err := cli.Ping(ctx)
+	return err == nil
 }
