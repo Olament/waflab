@@ -3,28 +3,28 @@ WAFLab 🐾
 
 WAFLab is a web-based platform for testing WAFs.
 
-## Live Demo
+# Live Demo
 
 https://waflab.org/
 
-## Architecture
+# Architecture
 
-WAFLab contains 3 parts:
+WAFLab contains 2 parts:
 
-Name | Description | Language | Source code | Release
-----|------|----|----|----
-Server-frontend | Web frontend UI for WAFLab server-side | Javascript + React + Ant Design | https://github.com/microsoft/waflab/tree/master/web | N/A
-Server-backend | RESTful API backend for WAFLab server-side | Golang + Beego + MySQL | https://github.com/microsoft/waflab | N/A
+Name | Description | Language | Source code
+----|------|----|----
+Frontend | Web frontend UI for WAFLab | Javascript + React + Ant Design | https://github.com/microsoft/waflab/tree/master/web
+Backend | RESTful API backend for WAFLab | Golang + Beego + MySQL | https://github.com/microsoft/waflab
 
-## Installation
+# Installation
 
-### Prerequisites
+## Prerequisites
 
 - [Go](https://golang.org/)
-- [Node.js](https://nodejs.org/)
-- [Docker](https://www.docker.com/)
+- NPM (shipped with [Node.js](https://nodejs.org/))
+- Docker (e.g., [Docker Desktop](https://docs.docker.com/docker-for-windows/install/) on Windows 10)
 
-### Server-side
+## Server-side
 
 Get the source code from Github via Git
 
@@ -32,13 +32,13 @@ Get the source code from Github via Git
 git clone https://github.com/microsoft/waflab.git
 ```
 
-#### Set up the database
+### Set up the database
 
 WAFLab use database to store generated testcases and test results.
 
 Prepare a [Xorm ORM](https://gitea.com/xorm/xorm) supported database (MySQL is recommended), replace `root:123@tcp(localhost:3306)/` in [conf/app.conf](https://github.com/microsoft/waflab/blob/master/conf/app.conf) with your own connection string. WAFLab will create a database named `waflab` and necessary tables in it if not exist. All Xorm supported databases are listed [here](https://gitea.com/xorm/xorm#user-content-drivers-support).
 
-#### Setup Server-backend
+### Setup Go backend
 
 Git clone the [OWASP ModSecurity Core Rule Set (CRS)](https://github.com/coreruleset/coreruleset) and [WAFBench](https://github.com/microsoft/WAFBench) under a same directory
 
@@ -67,22 +67,28 @@ cd waflab
 go run main.go
  ```
 
-#### Setup Server-frontend
+### Setup frontend web UI
 
-Install all Node.js dependencies with npm.
+#### Install the frontend dependencies with NPM (or Yarn if you like):
 
 ```bash
 cd waflab/web
 npm install
 ```
 
-Run Server-frontend (at port 7000 by default)
+#### Run frontend (at port 7000 by default):
 
 ```bash
 npm start
 ```
 
-WAFLab web interface is now avaliable at [http://localhost:7000/](http://localhost:7000/).
+WAFLab web UI is now avaliable at: http://localhost:7000
+
+#### Build frontend into static files and it will be served by Go server at port 7070 together with backend API:
+
+```bash
+npm build
+```
 
 ## License
 
