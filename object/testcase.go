@@ -31,7 +31,7 @@ type Testcase struct {
 	State            string   `xorm:"varchar(100)" json:"state"`
 
 	Data    *test.Testfile `xorm:"json" json:"data"`
-	RawData string         `xorm:"mediumtext" json:"-"`
+	RawData string         `xorm:"mediumtext" json:"rawData"`
 }
 
 func GetTestcases() []*Testcase {

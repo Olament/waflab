@@ -10,6 +10,7 @@ import TestcaseHeaderTable from "./TestcaseHeaderTable";
 import { Controlled as CodeMirror } from 'react-codemirror2'
 import "codemirror/lib/codemirror.css"
 require("codemirror/mode/javascript/javascript");
+require("codemirror/mode/yaml/yaml");
 
 const { Option } = AutoComplete;
 
@@ -144,18 +145,32 @@ class TestcaseEditPage extends React.Component {
               </Row>
             </React.Fragment>
           ) : (
-              <Row style={{ marginTop: '20px' }} >
-                <Col style={{ marginTop: '5px' }} span={2}>
-                  Data:
-              </Col>
-                <Col span={22} >
-                  <CodeMirror
-                    className="json-editor"
-                    value={JSON.stringify(this.state.testcase.data, null, 4)}
-                    options={{ mode: 'javascript', theme: "default" }}
-                  />
-                </Col>
-              </Row>
+              <React.Fragment>
+                <Row style={{ marginTop: '20px' }} >
+                  <Col style={{ marginTop: '5px' }} span={2}>
+                    Data (YAML):
+                  </Col>
+                  <Col span={22} >
+                    <CodeMirror
+                      className="json-editor"
+                      value={this.state.testcase.rawData}
+                      options={{ mode: 'yaml', theme: "default" }}
+                    />
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: '20px' }} >
+                  <Col style={{ marginTop: '5px' }} span={2}>
+                    Data (JSON):
+                  </Col>
+                  <Col span={22} >
+                    <CodeMirror
+                      className="json-editor"
+                      value={JSON.stringify(this.state.testcase.data, null, 4)}
+                      options={{ mode: 'javascript', theme: "default" }}
+                    />
+                  </Col>
+                </Row>
+              </React.Fragment>
             )
         }
 
