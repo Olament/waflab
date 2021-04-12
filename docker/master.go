@@ -121,7 +121,7 @@ func MakeMaster(numContainer int) *Master {
 		return &m
 	}
 
-	reader, err := cli.ImagePull(ctx, "docker.io/olament/wafbench", types.ImagePullOptions{})
+	reader, err := cli.ImagePull(ctx, "docker.io/waflab/wafbench", types.ImagePullOptions{})
 	if err != nil {
 		panic(err)
 	}

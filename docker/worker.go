@@ -135,7 +135,7 @@ func MakeWorker(master *Master, cli *client.Client, ctx context.Context, port st
 	// create a new container if there is not one already
 	if containerID == "" {
 		resp, err := cli.ContainerCreate(ctx, &container.Config{
-			Image:      "olament/wafbench",
+			Image:      "waflab/wafbench",
 			WorkingDir: "/WAFBench/ftw_compatible_tool",
 			ExposedPorts: nat.PortSet{
 				"5000": struct{}{},
