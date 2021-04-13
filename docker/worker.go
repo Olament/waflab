@@ -4,7 +4,6 @@
 package docker
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -13,7 +12,6 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -173,22 +171,6 @@ func MakeWorker(master *Master, cli *client.Client, ctx context.Context, port st
 	cli.ContainerRestart(ctx, containerID, &zeroDuration)
 	if err != nil {
 		return nil, err
-	}
-
-	// wait for gunicorn to start
-	out, err := cli.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{
-		ShowStdout: true,
-		Follow:     true,
-		Since:      strconv.Itoa(int(restartTime.UTC().Unix())),
-	})
-	if err != nil {
-		return nil, err
-	}
-	scanner := bufio.NewScanner(out)
-	for scanner.Scan() { // blocking until gunicorn start
-		if strings.Contains(scanner.Text(), "Booting worker") {
-			break
-		}
 	}
 
 	// http client
