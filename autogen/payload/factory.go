@@ -4,8 +4,7 @@
 package payload
 
 import (
-	"fmt"
-
+	"github.com/waflab/waflab/autogen/utils"
 	"github.com/waflab/waflab/test"
 
 	"github.com/hsluoyz/modsecurity-go/seclang/parser"
@@ -44,5 +43,8 @@ func AddVariable(v *parser.Variable, value string, payload *test.Input) error {
 		err := f(value, v.Index, payload)
 		return err
 	}
-	return fmt.Errorf("Vaiable: %s not supported", parser.VariableNameMap[v.Tk])
+	return &utils.ErrNotSupported{
+		Type: "Variable",
+		Name: parser.VariableNameMap[v.Tk],
+	}
 }
