@@ -4,9 +4,8 @@
 package operator
 
 import (
-	"fmt"
-
 	"github.com/hsluoyz/modsecurity-go/seclang/parser"
+	"github.com/waflab/waflab/autogen/utils"
 )
 
 type operationReverser func(argument string, not bool) (string, error)
@@ -43,5 +42,8 @@ func ReverseOperator(operator *parser.Operator) (string, error) {
 	if f, ok := reverserFactory[operator.Tk]; ok {
 		return f(operator.Argument, operator.Not)
 	}
-	return "", fmt.Errorf("Operator: %s not supported", parser.OperatorNameMap[operator.Tk])
+	return "", &utils.ErrNotSupported{
+		Type: "operator",
+		Name: parser.OperatorNameMap[operator.Tk],
+	}
 }
