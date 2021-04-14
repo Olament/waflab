@@ -43,6 +43,9 @@ func AddVariable(v *parser.Variable, value string, payload *test.Input) error {
 		err := f(value, v.Index, payload)
 		return err
 	}
+	if err := postprocess(payload); err != nil {
+		return err
+	}
 	return &utils.ErrNotSupported{
 		Type: "Variable",
 		Name: parser.VariableNameMap[v.Tk],

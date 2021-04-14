@@ -19,10 +19,13 @@ var filters = []filter{
 }
 
 // postprocess testing payload from AddVariable
-func postprocess(payload *test.Input) {
+func postprocess(payload *test.Input) error {
 	for _, f := range filters {
-		f(payload)
+		if err := f(payload); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // substitute Change Line and Line Feed character in Cookie
