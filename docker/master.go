@@ -117,7 +117,7 @@ func MakeMaster(numContainer int) *Master {
 	cli, _ = client.NewClientWithOpts(client.FromEnv)
 
 	if !GetMasterHealth() {
-		fmt.Printf("\033[31m%v\033[0m\n", ErrInitDocker)
+		fmt.Printf("\033[31m%v\nDo you have Docker (https://www.docker.com/) installed?\033[0m\n", ErrInitDocker)
 		return &m
 	}
 
