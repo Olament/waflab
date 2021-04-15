@@ -3,7 +3,7 @@
 
 package util
 
-const CodeBaseDir = "F:/github_repos/"
+const CodeBaseDir = "repos/"
 
 const CrsBaseDir = CodeBaseDir + "coreruleset/"
 const CrsRuleDir = CrsBaseDir + "rules/"
