@@ -77,7 +77,7 @@ func addQueryString(value, index string, payload *test.Input) error {
 
 func addRequestBody(value, index string, payload *test.Input) error {
 	payload.Method = "POST"
-	payload.Data = append(payload.Data, fmt.Sprintf("Foo_Key=%s", value))
+	payload.Data = append(payload.Data, value)
 	composeHeader(payload, "Content-Length", strconv.Itoa(len(payload.Data[0])))
 	composeHeader(payload, "Content-Type", "application/x-www-form-urlencoded")
 	return nil
