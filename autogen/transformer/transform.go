@@ -244,3 +244,7 @@ func reverseUtf8ToUnicode(variable string) string {
 		return s
 	})
 }
+
+func reverseNone(variable string) string {
+	return variable
+}

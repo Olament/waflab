@@ -20,6 +20,7 @@ var reverserFactory = map[int]transformReverser{
 	parser.TkTransHtmlEntityDecode:   reverseHTMLEntityDecode,
 	parser.TkTransJsDecode:           reverseJSDecode,
 	parser.TkTransLength:             reverseLength,
+	parser.TkTransNone:               reverseNone,
 	parser.TkTransNormalisePath:      reverseNormalizePath,
 	parser.TkTransNormalizePath:      reverseNormalizePath,
 	parser.TkTransNormalisePathWin:   reverseNormalizePathWin,
