@@ -52,3 +52,17 @@ func composeFile(payload *test.Input, name, filename, content string) {
 	}
 	payload.Headers["Content-Length"] = strconv.Itoa(length - 4) // excluding trailing \r\n\r\n
 }
+
+// setURI set the Uri entry in test.Input
+// value is value for Uri entry (slash "/" not included)
+// setURI will attempt to format it as a valid Uri value
+func setURI(payload *test.Input, value string) {
+	if !isValidURL(value) {
+		value = url.QueryEscape(value)
+	}
+	if _, err := url.ParseRequestURI(fmt.Sprintf("/%s", value)); err == nil {
+		payload.Uri = fmt.Sprintf("/%s", value)
+		return
+	}
+	payload.Uri = fmt.Sprintf("/?%s", value)
+}

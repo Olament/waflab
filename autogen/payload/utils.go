@@ -1,6 +1,11 @@
 package payload
 
-import "strings"
+import (
+	"net/url"
+	"strings"
+)
+
+const htmlCharacters = "!#$'()*+,/:;=?@[]-_.~%"
 
 func httpRequestEscape(content string) string {
 	var builder strings.Builder
@@ -27,4 +32,28 @@ func httpRequestEscape(content string) string {
 		}
 	}
 	return builder.String()
+}
+
+// isURLEncoded check if a string is url-encoded by comparing the
+// url-decoded value to its original value
+func isURLEncoded(value string) bool {
+	decoded, err := url.QueryUnescape(value)
+	if err != nil {
+		return false
+	}
+	if decoded != value {
+		return true
+	}
+	return false
+}
+
+func isValidURL(value string) bool {
+	for _, r := range value {
+		// check if rune is one of the reserved or unreserved html characters
+		if !((65 <= r && r <= 90) || (97 <= r && r <= 122) ||
+			(48 <= r && r <= 57) || strings.Contains(htmlCharacters, string(r))) {
+			return false
+		}
+	}
+	return true
 }

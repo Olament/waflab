@@ -71,7 +71,7 @@ func addFilesCombinedSize(value, index string, payload *test.Input) error {
 }
 
 func addQueryString(value, index string, payload *test.Input) error {
-	payload.Uri = fmt.Sprintf("/?%s", value)
+	setURI(payload, fmt.Sprintf("?%s", url.QueryEscape(value)))
 	return nil
 }
 
@@ -94,7 +94,7 @@ func addRequestCookiesName(value, index string, payload *test.Input) error {
 }
 
 func addRequestFileName(value, index string, payload *test.Input) error {
-	payload.Uri = fmt.Sprintf("/%s", url.QueryEscape(value))
+	setURI(payload, url.QueryEscape(value))
 	return nil
 }
 
@@ -124,12 +124,12 @@ func addRequestProtocol(value, index string, payload *test.Input) error {
 }
 
 func addRequestURI(value, index string, payload *test.Input) error {
-	payload.Uri = fmt.Sprintf("/%s", url.QueryEscape(value))
+	setURI(payload, url.QueryEscape(value))
 	return nil
 }
 
 func addRequestURIRaw(value, index string, payload *test.Input) error {
-	payload.Uri = fmt.Sprintf("/%s", value)
+	setURI(payload, value)
 	return nil
 }
 
