@@ -136,6 +136,7 @@ func MakeMaster(numContainer int) *Master {
 		go worker.Run()
 	}
 
+	m.success = true
 	return &m
 }
 
