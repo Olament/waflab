@@ -1,7 +1,6 @@
 package payload
 
 import (
-	"net/url"
 	"strings"
 )
 
@@ -32,19 +31,6 @@ func httpRequestEscape(content string) string {
 		}
 	}
 	return builder.String()
-}
-
-// isURLEncoded check if a string is url-encoded by comparing the
-// url-decoded value to its original value
-func isURLEncoded(value string) bool {
-	decoded, err := url.QueryUnescape(value)
-	if err != nil {
-		return false
-	}
-	if decoded != value {
-		return true
-	}
-	return false
 }
 
 func isValidURL(value string) bool {
