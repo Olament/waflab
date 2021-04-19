@@ -98,20 +98,16 @@ func reverseHTMLEntityDecode(variable string) string {
 
 	var builder strings.Builder
 	for _, r := range variable {
-		if utils.RandomBiasedBool(reverseHTMLEntityProb) {
-			if s, okay := htmlEscaper[string(r)]; okay { // special html character
-				builder.WriteString(s)
+		if s, okay := htmlEscaper[string(r)]; okay { // special html character
+			builder.WriteString(s)
+		} else {
+			// both hexadecimal and decimal are valid html encoding
+			// therefore we pick which one to use randomly
+			if utils.RandomBiasedBool(0.50) {
+				builder.WriteString(htmlHexEncode(r)) // &#xHH, hexadecimal
 			} else {
-				// both hexadecimal and decimal are valid html encoding
-				// therefore we pick which one to use randomly
-				if utils.RandomBiasedBool(0.50) {
-					builder.WriteString(htmlHexEncode(r)) // &#xHH, hexadecimal
-				} else {
-					builder.WriteString(htmlDecimalEncode(r)) // &#DDD decimal number
-				}
+				builder.WriteString(htmlDecimalEncode(r)) // &#DDD decimal number
 			}
-		} else { // not encode
-			builder.WriteRune(r)
 		}
 	}
 	return builder.String()
@@ -124,12 +120,8 @@ func reverseHTMLEntityDecode(variable string) string {
 // Ref: http://www.ecma-international.org/ecma-262/6.0/#sec-names-and-keywords
 func reverseJSDecode(variable string) string {
 	var builder strings.Builder
-	for _, r := range variable {
-		if utils.RandomBiasedBool(0.50) {
-			builder.WriteString(jsHexEncode(r))
-		} else {
-			builder.WriteString(jsOctalEncode(r))
-		}
+	for i := 0; i < len(variable); i++ {
+		builder.WriteString(fmt.Sprintf("\\x%x", variable[i]))
 	}
 	return builder.String()
 }
