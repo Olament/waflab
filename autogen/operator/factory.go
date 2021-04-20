@@ -8,11 +8,17 @@ import (
 	"github.com/waflab/waflab/autogen/utils"
 )
 
+// flag
+const (
+	NoFlag = iota
+	NoUTF8
+)
+
 type operationReverser func(argument string, not bool) (string, error)
+type operationReverserWithFlag func(argument string, not bool, flag int) (string, error)
 
 var reverserFactory = map[int]operationReverser{
 	// string matching operator
-	parser.TkOpRx:         reverseRx,
 	parser.TkOpBeginsWith: reverseBeginsWith,
 	parser.TkOpContains:   reverseContains,
 	parser.TkOpEndsWith:   reverseEndsWith,
@@ -37,10 +43,17 @@ var reverserFactory = map[int]operationReverser{
 	parser.TkOpDetectXss:       reverseDetectXSS,
 }
 
+var reverserFactoryWithFlag = map[int]operationReverserWithFlag{
+	parser.TkOpRx: reverseRx,
+}
+
 // ReverseOperator generate a string by reversing the given ModSecurity Operator.
-func ReverseOperator(operator *parser.Operator) (string, error) {
+func ReverseOperator(operator *parser.Operator, flag int) (string, error) {
 	if f, ok := reverserFactory[operator.Tk]; ok {
 		return f(operator.Argument, operator.Not)
+	}
+	if f, ok := reverserFactoryWithFlag[operator.Tk]; ok {
+		return f(operator.Argument, operator.Not, flag)
 	}
 	return "", &utils.ErrNotSupported{
 		Type: "operator",

@@ -9,7 +9,7 @@ import (
 )
 
 func rune2HexString(r rune) string {
-	return hex.EncodeToString([]byte{byte(r)})
+	return hex.EncodeToString([]byte(string(r)))
 }
 
 // https://www.w3.org/TR/CSS2/syndata.html#characters
@@ -30,17 +30,4 @@ func htmlDecimalEncode(r rune) string {
 // Hexadecimal numbers in numeric character references are case-insensitive.
 func htmlHexEncode(r rune) string {
 	return fmt.Sprintf("&#x%2s;", rune2HexString(r)) // &#xHH, hexadecimal
-}
-
-func jsHexEncode(r rune) string {
-	return fmt.Sprintf("\\u%04s", rune2HexString(r))
-}
-
-// http://www.ecma-international.org/ecma-262/6.0/#sec-names-and-keywords
-// \OOO (where O is any octal number)
-func jsOctalEncode(r rune) string {
-	if int32(r) < 0 || int32(r) > 255 {
-		return string(r)
-	}
-	return fmt.Sprintf("\\%03o", r)
 }

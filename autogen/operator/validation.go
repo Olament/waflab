@@ -64,7 +64,7 @@ func reverseValidateByteRange(argument string, not bool) (string, error) {
 				continue
 			}
 			if num <= diff {
-				build.WriteByte(byte(byteRanges[j] + num))
+				build.WriteByte(byte(byteRanges[j] + num + 1))
 				break
 			}
 			num -= (diff + 1)

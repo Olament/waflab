@@ -41,9 +41,10 @@ var converterFactory = map[int]payloadConverter{
 func AddVariable(v *parser.Variable, value string, payload *test.Input) error {
 	if f, ok := converterFactory[v.Tk]; ok {
 		err := f(value, v.Index, payload)
-		return err
-	}
-	if err := postprocess(payload); err != nil {
+		if err != nil {
+			return err
+		}
+		err = postprocess(payload)
 		return err
 	}
 	return &utils.ErrNotSupported{

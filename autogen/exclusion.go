@@ -41,7 +41,7 @@ func processIndexExclusion(variables []*parser.Variable) ([]*parser.Variable, er
 					if isRegexIndex(v.Index) {
 						// specified a regex index
 						var err error
-						index, err = operator.GenerateStringFromRegex(v.Index, false)
+						index, err = operator.GenerateStringFromRegex(v.Index, false, operator.NoFlag)
 						if err != nil {
 							return nil, err
 						}

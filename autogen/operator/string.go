@@ -19,8 +19,8 @@ import (
 // WorkingDirectory for pmFromFile operator
 var WorkingDirectory string
 
-func reverseRx(argument string, not bool) (string, error) {
-	str, err := GenerateStringFromRegex(argument, not)
+func reverseRx(argument string, not bool, flag int) (string, error) {
+	str, err := GenerateStringFromRegex(argument, not, flag)
 	if err != nil {
 		return "", err
 	}
@@ -28,15 +28,15 @@ func reverseRx(argument string, not bool) (string, error) {
 }
 
 func reverseBeginsWith(argument string, not bool) (string, error) {
-	return reverseRx(fmt.Sprintf("^%s.*", regexp.QuoteMeta(argument)), not)
+	return reverseRx(fmt.Sprintf("^%s.*", regexp.QuoteMeta(argument)), not, NoFlag)
 }
 
 func reverseContains(argument string, not bool) (string, error) {
-	return reverseRx(fmt.Sprintf(".*%s.*", regexp.QuoteMeta(argument)), not)
+	return reverseRx(fmt.Sprintf(".*%s.*", regexp.QuoteMeta(argument)), not, NoFlag)
 }
 
 func reverseEndsWith(argument string, not bool) (string, error) {
-	return reverseRx(fmt.Sprintf(".*%s$", regexp.QuoteMeta(argument)), not)
+	return reverseRx(fmt.Sprintf(".*%s$", regexp.QuoteMeta(argument)), not, NoFlag)
 }
 
 /*
@@ -106,5 +106,5 @@ func reverseStrEq(argument string, not bool) (string, error) {
 }
 
 func reverseWithin(argument string, not bool) (string, error) {
-	return reverseRx(fmt.Sprintf(".*%s.*", regexp.QuoteMeta(argument)), not)
+	return reverseRx(fmt.Sprintf(".*%s.*", regexp.QuoteMeta(argument)), not, NoFlag)
 }
