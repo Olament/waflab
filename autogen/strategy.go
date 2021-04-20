@@ -13,7 +13,6 @@ import (
 	"github.com/waflab/waflab/autogen/operator"
 	"github.com/waflab/waflab/autogen/payload"
 	"github.com/waflab/waflab/autogen/transformer"
-	"github.com/waflab/waflab/autogen/utils"
 	"github.com/waflab/waflab/autogen/yaml"
 	"github.com/waflab/waflab/rule"
 	"github.com/waflab/waflab/test"
@@ -70,13 +69,17 @@ func processIndependentRule(rule *parser.RuleDirective, maxRetry int) *test.Test
 	}
 	rule.Variable = newVariables
 
-	fmt.Println(utils.RuleDump(rule))
-
 	current := 0                                   // number of test case generated
 	isDuplicate := make(map[string]bool, maxRetry) // determine if generated reversed string is duplicated
 	for i := 0; i < maxRetry; i++ {
 		// reverse generate operator and transformation
-		reversed, err := operator.ReverseOperator(rule.Operator)
+		var reversed string
+		if rule.Actions.Id == 944200 {
+			reversed, err = operator.ReverseOperator(rule.Operator, operator.NoUTF8)
+		} else {
+			reversed, err = operator.ReverseOperator(rule.Operator, operator.NoFlag)
+		}
+
 		if err != nil {
 			log.Printf("Rule %d: skip generation, %v\n", rule.Actions.Id, err)
 			return nil
