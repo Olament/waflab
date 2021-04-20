@@ -42,17 +42,17 @@ const (
 
 var ErrFailedGeneration = errors.New("autogen/operator: Unable to generation string from regexp")
 
-func generate(re *syntax.Regexp) string {
+func generate(re *syntax.Regexp) []rune {
 	//fmt.Println("re:", re, "sub:", re.Sub)
 	op := re.Op
 	switch op {
 	case syntax.OpNoMatch:
 	case syntax.OpEmptyMatch:
-		return ""
+		return []rune{}
 	case syntax.OpLiteral:
-		res := ""
+		res := []rune{}
 		for _, r := range re.Rune {
-			res += string(r)
+			res = append(res, r)
 		}
 		return res
 	case syntax.OpCharClass:
@@ -81,7 +81,7 @@ func generate(re *syntax.Regexp) string {
 			}
 			if len(possibleChars) > 0 {
 				c := possibleChars[utils.RandomIntWithRange(0, len(possibleChars))]
-				return string([]byte{c})
+				return []rune(string([]byte{c}))
 			}
 		}
 		r := utils.RandomIntWithRange(0, int(sum))
@@ -95,56 +95,56 @@ func generate(re *syntax.Regexp) string {
 			}
 			sum += gap
 		}
-		return string(ru)
+		return []rune{ru}
 	case syntax.OpAnyCharNotNL, syntax.OpAnyChar:
 		chars := printableChars
 		if op == syntax.OpAnyCharNotNL {
 			chars = printableChars
 		}
 		c := chars[utils.RandomIntWithRange(0, len(chars))]
-		return string([]byte{c})
+		return []rune(string([]byte{c}))
 	case syntax.OpBeginLine:
 	case syntax.OpEndLine:
 	case syntax.OpBeginText:
 	case syntax.OpEndText:
 	case syntax.OpWordBoundary:
-		return " "
+		return []rune{32} // rune codepoint for space character
 	case syntax.OpNoWordBoundary:
 	case syntax.OpCapture:
 		return generate(re.Sub0[0])
 	case syntax.OpStar:
 		// Repeat zero or more times
-		res := ""
+		res := []rune{}
 		count := utils.RandomIntWithRange(0, repeatedstringLimit+1)
 		for i := 0; i < count; i++ {
 			for _, r := range re.Sub {
-				res += generate(r)
+				res = append(res, generate(r)...)
 			}
 		}
 		return res
 	case syntax.OpPlus:
 		// Repeat one or more times
-		res := ""
+		res := []rune{}
 		count := utils.RandomIntWithRange(0, repeatedstringLimit) + 1
 		for i := 0; i < count; i++ {
 			for _, r := range re.Sub {
-				res += generate(r)
+				res = append(res, generate(r)...)
 			}
 		}
 		return res
 	case syntax.OpQuest:
 		// Zero or one instances
-		res := ""
+		res := []rune{}
 		count := utils.RandomIntWithRange(0, 2)
 		for i := 0; i < count; i++ {
 			for _, r := range re.Sub {
-				res += generate(r)
+				res = append(res, generate(r)...)
 			}
 		}
 		return res
 	case syntax.OpRepeat:
 		// Repeat one or more times
-		res := ""
+		res := []rune{}
 		count := 0
 		re.Max = int(math.Min(float64(re.Max), float64(repeatedstringLimit)))
 		if re.Max > re.Min {
@@ -152,15 +152,15 @@ func generate(re *syntax.Regexp) string {
 		}
 		for i := 0; i < re.Min || i < (re.Min+count); i++ {
 			for _, r := range re.Sub {
-				res += generate(r)
+				res = append(res, generate(r)...)
 			}
 		}
 		return res
 	case syntax.OpConcat:
 		// Concatenate sub-regexes
-		res := ""
+		res := []rune{}
 		for _, r := range re.Sub {
-			res += generate(r)
+			res = append(res, generate(r)...)
 		}
 		return res
 	case syntax.OpAlternate:
@@ -169,11 +169,11 @@ func generate(re *syntax.Regexp) string {
 	default:
 		log.Fatalf("[reg-gen] Unhandled op: %s", op.String())
 	}
-	return ""
+	return []rune{}
 }
 
 // Generate a negated string from something
-func GenerateStringFromRegex(expression string, not bool) (res string, err error) {
+func GenerateStringFromRegex(expression string, not bool, flag int) (res string, err error) {
 	re, err := syntax.Parse(expression, syntax.PerlX)
 	if err != nil {
 		return "", err
@@ -193,7 +193,16 @@ func GenerateStringFromRegex(expression string, not bool) (res string, err error
 			return "", ErrFailedGeneration
 		}
 	} else {
-		res = generate(re)
+		rs := generate(re)
+		if flag == NoUTF8 { // no UTF8 encoding
+			var bs = make([]byte, len(rs))
+			for i := 0; i < len(rs); i++ {
+				bs[i] = byte(rs[i])
+			}
+			res = string(bs)
+		} else { // default
+			res = string(rs)
+		}
 		replacer := strings.NewReplacer("K", " ", "ſ", " ") // case-folding
 		res = replacer.Replace(res)
 	}
