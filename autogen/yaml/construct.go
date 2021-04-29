@@ -38,7 +38,7 @@ func DefaultStage() *test.Stage {
 			Protocol:   "http",
 			Uri:        "/",
 			Version:    "HTTP/1.0",
-			Headers:    map[string]string{},
+			Headers:    map[string]interface{}{},
 		},
 		Output: &test.Output{
 			Status:        []int{200},

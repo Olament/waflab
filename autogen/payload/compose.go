@@ -6,7 +6,6 @@ package payload
 import (
 	"fmt"
 	"net/url"
-	"strconv"
 
 	"github.com/waflab/waflab/test"
 )
@@ -50,7 +49,7 @@ func composeFile(payload *test.Input, name, filename, content string) {
 	for _, d := range payload.Data {
 		length += len(d) + 2 // including /r/n
 	}
-	payload.Headers["Content-Length"] = strconv.Itoa(length - 4) // excluding trailing \r\n\r\n
+	payload.Headers["Content-Length"] = length - 4 // excluding trailing \r\n\r\n
 }
 
 // setURI set the Uri entry in test.Input
