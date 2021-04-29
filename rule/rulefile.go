@@ -93,7 +93,7 @@ func (rf *Rulefile) syncParanoiaLevels() {
 func getUserAgent(tf *test.Testfile) string {
 	headers := tf.Tests[0].Stages[0].Stage.Input.Headers
 	if userAgent, ok := headers["User-Agent"]; ok {
-		return userAgent
+		return userAgent.(string)
 	} else {
 		return ""
 	}
