@@ -16,6 +16,7 @@ type filter func(payload *test.Input) error
 
 var filters = []filter{
 	crlfFilter,
+	cookieFilter,
 }
 
 // postprocess testing payload from AddVariable
@@ -38,6 +39,21 @@ func crlfFilter(payload *test.Input) error {
 			"\r", " ",
 		)
 		payload.Headers["Cookie"] = replacer.Replace(payload.Headers["Cookie"].(string))
+	}
+	return nil
+}
+
+func cookieFilter(payload *test.Input) error {
+	if value, okay := payload.Headers["Cookie"]; okay {
+		value := value.(string)
+		if index := strings.IndexAny(value, ";"); index > 0 && index < len(value)-1 {
+			// ; appears within the cookie body
+			return ErrReject
+		}
+		if freq := strings.Count(value, "="); freq > 1 {
+			// = appears more than once
+			return ErrReject
+		}
 	}
 	return nil
 }
