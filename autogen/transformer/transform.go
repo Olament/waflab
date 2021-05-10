@@ -48,6 +48,7 @@ func randomStringsInsertion(str string, reserve []string, probability float64) s
 }
 
 func reverseBase64Decode(variable string) string {
+	return variable
 	return base64.StdEncoding.EncodeToString([]byte(variable))
 }
 
@@ -168,6 +169,7 @@ func reverseLowercase(variable string) string {
 }
 
 func reverseRemoveComments(variable string) string {
+	return variable
 	res := randomStringsInsertion(variable,
 		[]string{fmt.Sprintf("/*%s*/", utils.RandomString(randomStringLength))},
 		reverseCommentProb)
