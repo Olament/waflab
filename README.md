@@ -40,32 +40,26 @@ Prepare a [Xorm ORM](https://gitea.com/xorm/xorm) supported database (MySQL is r
 
 ### Setup Go backend
 
-Git clone the [OWASP ModSecurity Core Rule Set (CRS)](https://github.com/coreruleset/coreruleset) and [WAFBench](https://github.com/microsoft/WAFBench) under a same directory
-
-```bash
-git clone https://github.com/microsoft/WAFBench.git
-git clone https://github.com/coreruleset/coreruleset.git
-```
-
-Pick the CRS version you would like to use. We use CRS v3.2 as an example here.
-
-```bash
-cd coreruleset
-git checkout --track origin/v3.2/master
-```
-
-Set the ```CodeBaseDir``` inside ```waflab/util/const.go``` to the directory of WAFBench and CRS.
-
-```Go
-const CodeBaseDir = "DIRECTORY/OF/WAFBENCH/AND/CRS"
-```
-
 Run Server-backend (at port 7070 by default):
 
 ```bash
 cd waflab
 go run main.go
- ```
+```
+ 
+Use your own WAFBench image (optional)
+
+If you want to add some customized behavior to the package sending process. You can use your own WAFBench image. Once your made the change to the WAFBench codebase, you need to build a new Docker image and upload it to DockerHub.
+
+```bash
+cd WAFBench
+docker build . -t org/wafbench
+docker login
+docker push org/wafbench
+```
+
+Then, change the ```docker.io/waflab/wafbench``` within ```docker/master.go``` to the image you just build. Ex. ```docker.io/org/wafbench```
+
 
 ### Setup frontend web UI
 
