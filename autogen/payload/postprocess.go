@@ -17,6 +17,7 @@ type filter func(payload *test.Input) error
 var filters = []filter{
 	crlfFilter,
 	cookieFilter,
+	xmlFilter,
 }
 
 // postprocess testing payload from AddVariable
@@ -43,6 +44,7 @@ func crlfFilter(payload *test.Input) error {
 	return nil
 }
 
+// return ErrReject if cookie is invalid
 func cookieFilter(payload *test.Input) error {
 	if value, okay := payload.Headers["Cookie"]; okay {
 		value := value.(string)
@@ -53,6 +55,17 @@ func cookieFilter(payload *test.Input) error {
 		if freq := strings.Count(value, "="); freq > 1 {
 			// = appears more than once
 			return ErrReject
+		}
+	}
+	return nil
+}
+
+// xmlFilter replace the � (replacement character), which generate from converting unsupported
+// white space character to XML encoding, to space character.
+func xmlFilter(payload *test.Input) error {
+	if payload.Data != nil {
+		for index := 0; index < len(payload.Data); index++ {
+			payload.Data[index] = strings.ReplaceAll(payload.Data[index], "�", " ")
 		}
 	}
 	return nil
