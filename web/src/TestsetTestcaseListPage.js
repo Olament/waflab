@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 import React from "react";
-import {Button, Col, Progress, Row, Switch, Table, Tag} from 'antd';
+import { Button, Col, Progress, Row, Switch, Table, Tag } from 'antd';
 import * as Setting from "./Setting";
-import {getStatusTagColor} from "./Setting";
+import { getStatusTagColor } from "./Setting";
 import * as TestsetBackend from "./backend/TestsetBackend";
 import * as TestcaseBackend from "./backend/TestcaseBackend";
 import * as ResultBackend from "./backend/ResultBackend";
@@ -122,12 +122,18 @@ class TestsetTestcaseListPage extends React.Component {
       hitRules = [];
     }
     const res = hitRules.map(hitRule => {
-      const tokens = hitRule.split(",").map(token => {
-        let res = token.trim(" ");
-        const i = res.lastIndexOf("-");
-        res = res.substring(i + 1);
-        return res;
-      });
+      const tokens = hitRule.split(",")
+        .map(token => {
+          let res = token.trim(" ");
+          const i = res.lastIndexOf("-");
+          res = res.substring(i + 1);
+          return res;
+        })
+        .filter(token => {
+          // remove hit rule token within INITIALIZATION range
+          let value = parseInt(token, 10)
+          return isNaN(value) || value < 901000 || value > 901999
+        });
       if (hitRule === "") {
         hitRule = "(empty)";
       } else {
@@ -143,7 +149,7 @@ class TestsetTestcaseListPage extends React.Component {
         color = "403";
       }
 
-      return {hitRule: hitRule, color: color};
+      return { hitRule: hitRule, color: color };
     })
     return res;
   }
@@ -385,27 +391,27 @@ class TestsetTestcaseListPage extends React.Component {
     return (
       <div>
         <Table rowSelection={rowSelection} columns={columns} dataSource={testcases} rowKey="name" size="middle" bordered pagination={{ pageSize: 1000 }}
-               title={() => (
-                 <div>
-                   <Tag color="#108ee9">{this.state.testset === null ? "" : this.state.testset.name}</Tag> Testcases&nbsp;&nbsp;&nbsp;&nbsp;
-                   <Button type="primary" size="small" onClick={this.getResults.bind(this)}>Run {this.state.selectedRowKeys.length === 0 ? "All" : "Selected"}</Button>&nbsp;&nbsp;&nbsp;&nbsp;
+          title={() => (
+            <div>
+              <Tag color="#108ee9">{this.state.testset === null ? "" : this.state.testset.name}</Tag> Testcases&nbsp;&nbsp;&nbsp;&nbsp;
+              <Button type="primary" size="small" onClick={this.getResults.bind(this)}>Run {this.state.selectedRowKeys.length === 0 ? "All" : "Selected"}</Button>&nbsp;&nbsp;&nbsp;&nbsp;
                    Target or Baseline ?&nbsp;&nbsp;
-                   <Switch checked={this.state.isTarget} onChange={(checked, e) => {
-                     this.setState({
-                       isTarget: checked,
-                     });
-                   }} />
-                 </div>
-               )}
-               rowClassName={(record, index) => {
-                 if (record.action === "Block" && record.state === "Enabled" && record.result !== "ok: ") {
-                   return "red-row";
-                 } else if (record.action === "AnomalyScoring" && record.state === "Enabled" && this.parseHitRules(record, record.hitRules).some(pair => pair.color === "403")) {
-                   return "red-row";
-                 } else {
-                   return null;
-                 }
-               }}
+              <Switch checked={this.state.isTarget} onChange={(checked, e) => {
+                this.setState({
+                  isTarget: checked,
+                });
+              }} />
+            </div>
+          )}
+          rowClassName={(record, index) => {
+            if (record.action === "Block" && record.state === "Enabled" && record.result !== "ok: ") {
+              return "red-row";
+            } else if (record.action === "AnomalyScoring" && record.state === "Enabled" && this.parseHitRules(record, record.hitRules).some(pair => pair.color === "403")) {
+              return "red-row";
+            } else {
+              return null;
+            }
+          }}
         />
       </div>
     );
