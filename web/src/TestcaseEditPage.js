@@ -86,6 +86,16 @@ class TestcaseEditPage extends React.Component {
             }} />
           </Col>
         </Row>
+        <Row style={{ marginTop: '20px' }} >
+          <Col style={{ marginTop: '5px' }} span={2}>
+            Reason:
+          </Col>
+          <Col span={22} >
+            <Input value={this.state.testcase.reason} onChange={e => {
+              this.updateTestcaseField('reason', e.target.value);
+            }} />
+          </Col>
+        </Row>
         {
           this.state.testcase?.data === null ? (
             <React.Fragment>

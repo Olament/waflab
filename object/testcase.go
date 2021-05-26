@@ -21,6 +21,7 @@ type Testcase struct {
 	Method           string   `xorm:"varchar(100)" json:"method"`
 	UserAgent        string   `xorm:"varchar(1000)" json:"userAgent"`
 	QueryStrings     []Pair   `xorm:"mediumtext" json:"queryStrings"`
+	Reason           string   `xorm:"varchar(1000)" json:"reason"`
 	StatusLists      [][]int  `json:"statusLists"`
 	BaselineStatuses []int    `json:"baselineStatuses"`
 	TrueStatuses     []int    `json:"trueStatuses"`

@@ -338,6 +338,13 @@ class TestsetTestcaseListPage extends React.Component {
         sorter: (a, b) => a.state.localeCompare(b.state),
       },
       {
+        title: 'Reason',
+        dataIndex: 'reason',
+        key: 'reason',
+        width: '100px',
+        sorter: (a, b) => a.reason.localeCompare(b.reason),
+      },
+      {
         title: 'Progress',
         key: 'progress',
         width: '100px',
@@ -408,6 +415,8 @@ class TestsetTestcaseListPage extends React.Component {
               return "red-row";
             } else if (record.action === "AnomalyScoring" && record.state === "Enabled" && this.parseHitRules(record, record.hitRules).some(pair => pair.color === "403")) {
               return "red-row";
+            } else if (record.reason !== "") {
+              return "green-row";
             } else {
               return null;
             }
