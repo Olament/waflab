@@ -38,6 +38,16 @@ WAFLab use database to store generated testcases and test results.
 
 Prepare a [Xorm ORM](https://gitea.com/xorm/xorm) supported database (MySQL is recommended), replace `root:123@tcp(localhost:3306)/` in [conf/app.conf](https://github.com/microsoft/waflab/blob/master/conf/app.conf) with your own connection string. WAFLab will create a database named `waflab` and necessary tables in it if not exist. All Xorm supported databases are listed [here](https://gitea.com/xorm/xorm#user-content-drivers-support).
 
+### Use docker-compose
+
+You can start the application if you have ```docker-compose``` installed by 
+
+```bash
+docker-compose up
+```
+
+Then, you can access the frontend UI via ```localhost:7000```. Alternatively, you can also set up the frontend and backend separately using following method.
+
 ### Setup Go backend
 
 Run Server-backend (at port 7070 by default):

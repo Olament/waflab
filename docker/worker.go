@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -55,8 +56,13 @@ func (w *Worker) doTask(task *Task) {
 	atomic.AddUint64(&w.numJob, 1)
 	defer atomic.AddUint64(&w.numJob, ^uint64(0)) // decremnt by one
 
+	dest := fmt.Sprintf("http://127.0.0.1:%s", w.port)
+	if os.Getenv("CONTAINER") != "" {
+		dest = fmt.Sprintf("http://wafbench-%s:5000", w.port)
+	}
+
 	resp, err := sendRequest(w.httpClient,
-		fmt.Sprintf("http://127.0.0.1:%s", w.port),
+		dest,
 		task.Hostname,
 		task.YAMLFile)
 	if err != nil {
@@ -163,6 +169,12 @@ func MakeWorker(master *Master, cli *client.Client, ctx context.Context, port st
 			return nil, err
 		}
 		containerID = resp.ID
+
+		if os.Getenv("CONTAINER") == "1" {
+			if err := cli.NetworkConnect(ctx, "wafnet", containerID, nil); err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	// restart the container

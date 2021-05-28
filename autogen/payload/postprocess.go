@@ -37,7 +37,7 @@ func crlfFilter(payload *test.Input) error {
 			"\n", " ",
 			"\r", " ",
 		)
-		payload.Headers["Cookie"] = replacer.Replace(payload.Headers["Cookie"])
+		payload.Headers["Cookie"] = replacer.Replace(payload.Headers["Cookie"].(string))
 	}
 	return nil
 }
