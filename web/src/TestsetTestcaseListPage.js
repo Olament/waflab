@@ -132,7 +132,7 @@ class TestsetTestcaseListPage extends React.Component {
         .filter(token => {
           // remove hit rule token within INITIALIZATION range
           let value = parseInt(token, 10)
-          return isNaN(value) || value < 901000 || value > 901999
+          return isNaN(value) || value > 901999
         });
       if (hitRule === "") {
         hitRule = "(empty)";
