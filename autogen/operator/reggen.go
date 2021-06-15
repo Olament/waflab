@@ -120,7 +120,9 @@ func generate(re *syntax.Regexp) []rune {
 		case syntax.OpBeginText:
 		case syntax.OpEndText:
 		case syntax.OpWordBoundary:
-			res = append(res, 32) // rune codepoint for space character
+			if len(res) == 0 || res[len(res)-1] != 32 {
+				res = append(res, 32) // rune codepoint for space character
+			}
 			prevOP = syntax.OpWordBoundary
 		case syntax.OpNoWordBoundary:
 		case syntax.OpCapture:
