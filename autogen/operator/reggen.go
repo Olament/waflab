@@ -115,12 +115,12 @@ func generate(re *syntax.Regexp) []rune {
 			c := chars[utils.RandomIntWithRange(0, len(chars))]
 			res = append(res, []rune(string([]byte{c}))...)
 			prevOP = syntax.OpAnyCharNotNL
-		case syntax.OpBeginLine:
-		case syntax.OpEndLine:
-		case syntax.OpBeginText:
-		case syntax.OpEndText:
+		case syntax.OpBeginLine, syntax.OpBeginText:
+			prevOP = syntax.OpBeginLine
+		case syntax.OpEndLine, syntax.OpEndText:
+			prevOP = syntax.OpEndLine
 		case syntax.OpWordBoundary:
-			if len(res) == 0 || res[len(res)-1] != 32 {
+			if (len(res) == 0 || res[len(res)-1] != 32) && prevOP != syntax.OpBeginLine {
 				res = append(res, 32) // rune codepoint for space character
 			}
 			prevOP = syntax.OpWordBoundary
