@@ -47,6 +47,8 @@ func generate(re *syntax.Regexp) []rune {
 	stack = append(stack, re)
 	res := []rune{}
 
+	var prevOP syntax.Op = syntax.OpNoMatch
+
 	for len(stack) > 0 {
 		n := len(stack) - 1
 		re := stack[n]
@@ -58,7 +60,12 @@ func generate(re *syntax.Regexp) []rune {
 		case syntax.OpEmptyMatch:
 		case syntax.OpLiteral:
 			res = append(res, re.Rune...)
+			prevOP = syntax.OpLiteral
 		case syntax.OpCharClass:
+			// if previous OP is \b and current OP is \s
+			if prevOP == syntax.OpWordBoundary && equal(re.Rune, []rune{9, 10, 12, 13, 32, 32}) {
+				continue
+			}
 			// number of possible chars
 			sum := 0
 			for i := 0; i < len(re.Rune); i += 2 {
@@ -99,6 +106,7 @@ func generate(re *syntax.Regexp) []rune {
 				sum += gap
 			}
 			res = append(res, ru)
+			prevOP = syntax.OpCharClass
 		case syntax.OpAnyCharNotNL, syntax.OpAnyChar:
 			chars := printableChars
 			if op == syntax.OpAnyCharNotNL {
@@ -106,33 +114,39 @@ func generate(re *syntax.Regexp) []rune {
 			}
 			c := chars[utils.RandomIntWithRange(0, len(chars))]
 			res = append(res, []rune(string([]byte{c}))...)
+			prevOP = syntax.OpAnyCharNotNL
 		case syntax.OpBeginLine:
 		case syntax.OpEndLine:
 		case syntax.OpBeginText:
 		case syntax.OpEndText:
 		case syntax.OpWordBoundary:
 			res = append(res, 32) // rune codepoint for space character
+			prevOP = syntax.OpWordBoundary
 		case syntax.OpNoWordBoundary:
 		case syntax.OpCapture:
 			stack = append(stack, re.Sub0[0])
+			prevOP = syntax.OpCapture
 		case syntax.OpStar:
 			// Repeat zero or more times
 			count := utils.RandomIntWithRange(0, repeatedstringLimit+1)
 			for i := 0; i < count; i++ {
 				stack = append(stack, re.Sub...)
 			}
+			prevOP = syntax.OpStar
 		case syntax.OpPlus:
 			// Repeat one or more times
 			count := utils.RandomIntWithRange(0, repeatedstringLimit) + 1
 			for i := 0; i < count; i++ {
 				stack = append(stack, reverse(re.Sub)...)
 			}
+			prevOP = syntax.OpPlus
 		case syntax.OpQuest:
 			// Zero or one instances
 			count := utils.RandomIntWithRange(0, 2)
 			for i := 0; i < count; i++ {
 				stack = append(stack, reverse(re.Sub)...)
 			}
+			prevOP = syntax.OpQuest
 		case syntax.OpRepeat:
 			// Repeat one or more times
 			count := 0
@@ -143,12 +157,15 @@ func generate(re *syntax.Regexp) []rune {
 			for i := 0; i < re.Min || i < (re.Min+count); i++ {
 				stack = append(stack, reverse(re.Sub)...)
 			}
+			prevOP = syntax.OpRepeat
 		case syntax.OpConcat:
 			// Concatenate sub-regexes
 			stack = append(stack, reverse(re.Sub)...)
+			prevOP = syntax.OpConcat
 		case syntax.OpAlternate:
 			i := utils.RandomIntWithRange(0, len(re.Sub))
 			stack = append(stack, re.Sub[i])
+			prevOP = syntax.OpAlternate
 		default:
 			log.Fatalf("[reg-gen] Unhandled op: %s", op.String())
 		}
@@ -164,6 +181,18 @@ func reverse(input []*syntax.Regexp) []*syntax.Regexp {
 		new[i] = input[n-i-1]
 	}
 	return new
+}
+
+func equal(r1, r2 []rune) bool {
+	if len(r1) != len(r2) {
+		return false
+	}
+	for index, r := range r1 {
+		if r != r2[index] {
+			return false
+		}
+	}
+	return true
 }
 
 // Generate a negated string from something
