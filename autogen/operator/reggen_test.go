@@ -12,8 +12,9 @@ func TestReggen(t *testing.T) {
 		expression string
 		output     string
 	}{
-		{`(abc\b|a)\sf`, `abc f`},
-		{`(abc |a)\ba`, `abc a`},
+		{`(abc\b|a)\sf`, `abc f`}, // \b followed by \s
+		{`(abc |a)\ba`, `abc a`},  // \s followed by \b
+		{`^\babc`, `abc`},         // ^ followed by \b
 	}
 
 	for _, tc := range tests {
