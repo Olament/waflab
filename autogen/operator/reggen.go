@@ -185,11 +185,11 @@ func GenerateStringFromRegex(expression string, not bool, flag int) (res string,
 	if not {
 		for i := 0; i < maxRetry; i++ {
 			res = utils.RandomString(10)
-			if regex.MatchString(res) {
+			if !regex.MatchString(res) {
 				break
 			}
 		}
-		if !regex.MatchString(res) {
+		if regex.MatchString(res) {
 			return "", ErrFailedGeneration
 		}
 	} else {
