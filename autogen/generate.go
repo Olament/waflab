@@ -27,7 +27,7 @@ func GenerateTestFromDirectory(dirPath, output string) {
 
 		// only process file with conf suffix
 		if info.Mode().IsRegular() && filepath.Ext(path) == ".conf" {
-			ruleStrings, err := readRuleStringFromConf(path)
+			ruleStrings, err := ReadRuleStringFromConf(path)
 			if err != nil {
 				fmt.Printf("error %v when read %q\n", err, path)
 				return nil
@@ -62,7 +62,7 @@ func GenerateTestFromDirectory(dirPath, output string) {
 
 // readRuleStringFromConf read rule string from config and
 // remove any additional comments
-func readRuleStringFromConf(path string) (string, error) {
+func ReadRuleStringFromConf(path string) (string, error) {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
 		return "", err
