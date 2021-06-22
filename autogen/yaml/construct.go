@@ -12,17 +12,6 @@ func DefaultYAML() *test.Testfile {
 			Enabled: true,
 			Name:    "",
 		},
-		Tests: []*test.Test{
-			{
-				TestTitle: "",
-				Desc:      "",
-				Stages: []*test.StageWrapper{
-					{
-						Stage: DefaultStage(),
-					},
-				},
-			},
-		},
 	}
 	return v
 }
