@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -38,8 +39,7 @@ func init() {
 
 func testing(cmd *cobra.Command, args []string) {
 	if confDirectory == "" && yamlDirectory == "" {
-		fmt.Fprintln(os.Stderr, "You must specify a source of testcases using config or yaml flag!")
-		return
+		confDirectory = path.Join("repos", "coreruleset", "rules")
 	}
 
 	var yamlTestcases []string
