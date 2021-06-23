@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cheggaaa/pb/v3"
 	"github.com/spf13/cobra"
 	"github.com/waflab/waflab/docker"
 	"gopkg.in/yaml.v2"
@@ -86,27 +85,21 @@ func testing(cmd *cobra.Command, args []string) {
 	}
 
 	master := docker.MakeMaster(5)
-	results := []docker.Response{}
-	bar := pb.StartNew(len(yamlTestcases))
+	re := regexp.MustCompile(filter)
+
 	for _, y := range yamlTestcases {
-		res, err := master.InsertTask(args[0], y)
+		results, err := master.InsertTask(args[0], y)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return
 		}
-		results = append(results, res...)
-		bar.Increment()
-	}
-	bar.Finish()
-
-	re := regexp.MustCompile(filter)
-
-	for _, res := range results {
-		replacer := strings.NewReplacer(
-			"%NAME", res.Title,
-			"%STATUS", res.Status,
-			"%HIT", strings.Join(re.FindAllString(res.HitRule, -1), " "),
-		)
-		fmt.Println(replacer.Replace(format))
+		for _, res := range results {
+			replacer := strings.NewReplacer(
+				"%NAME", res.Title,
+				"%STATUS", res.Status,
+				"%HIT", strings.Join(re.FindAllString(res.HitRule, -1), " "),
+			)
+			fmt.Println(replacer.Replace(format))
+		}
 	}
 }
