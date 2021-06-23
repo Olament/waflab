@@ -39,7 +39,8 @@ func init() {
 
 func testing(cmd *cobra.Command, args []string) {
 	if confDirectory == "" && yamlDirectory == "" {
-		confDirectory = path.Join("repos", "coreruleset", "rules")
+		// no data source supplied, use sample yaml instead
+		yamlDirectory = path.Join("sample")
 	}
 
 	var yamlTestcases []string
