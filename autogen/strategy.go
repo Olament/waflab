@@ -31,8 +31,11 @@ func GenerateTests(ruleString string, maxRetry int) (YAMLs []*test.Testfile) {
 	}
 
 	for _, rule := range rules {
+		if rule.Actions == nil || rule.Actions.Id == 0 {
+			continue
+		}
 		if rule.Actions.Chain { // Chained rule
-			log.Printf("Err chain rule %d not supported\n", rule.Actions.Id)
+			// log.Printf("Err chain rule %d not supported\n", rule.Actions.Id)
 			continue
 		}
 		if t := processIndependentRule(rule, maxRetry); t != nil {
@@ -75,7 +78,7 @@ func processIndependentRule(rule *parser.RuleDirective, targetCases int) *test.T
 				continue
 			}
 			if err != nil { // unhandled error
-				log.Printf("autogen/strategy: %v\n", err)
+				// log.Printf("autogen/strategy: %v\n", err)
 				return nil
 			}
 			if _, okay := isDuplicate[signature]; okay { // repeated generation

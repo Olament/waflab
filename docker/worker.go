@@ -42,9 +42,7 @@ type Worker struct {
 func (w *Worker) Run() {
 	for {
 		if w.numJob < w.jobCapacity {
-			fmt.Printf("%s start find job with %v ongoing jobs\n", w.port, w.numJob)
 			task := w.master.getTask()
-			fmt.Printf("%s get job %s\n", w.port, task.ID)
 			go w.doTask(task)
 		}
 		time.Sleep(scheduleInterval)
@@ -52,7 +50,6 @@ func (w *Worker) Run() {
 }
 
 func (w *Worker) doTask(task *Task) {
-	fmt.Printf("Start task %s on %s\n", task.ID, w.port)
 	atomic.AddUint64(&w.numJob, 1)
 	defer atomic.AddUint64(&w.numJob, ^uint64(0)) // decremnt by one
 
@@ -74,7 +71,6 @@ func (w *Worker) doTask(task *Task) {
 	var result []Response
 	body, err := ioutil.ReadAll(resp.Body)
 	err = json.Unmarshal(body, &result)
-	fmt.Println(result)
 	if err != nil {
 		w.master.reportTask(task, false, nil, err)
 	}
@@ -127,8 +123,6 @@ func MakeWorker(master *Master, cli *client.Client, ctx context.Context, port st
 	w := Worker{}
 	w.mux.Lock()
 	defer w.mux.Unlock()
-
-	fmt.Println(port)
 
 	containerName := fmt.Sprintf("wafbench-%s", port)
 	containerID, err := getContainerByName(ctx, cli, containerName)

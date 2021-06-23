@@ -4,10 +4,7 @@
 package transformer
 
 import (
-	"fmt"
-
 	"github.com/hsluoyz/modsecurity-go/seclang/parser"
-	"github.com/waflab/waflab/autogen/utils"
 )
 
 type transformReverser func(variable string) string
@@ -44,10 +41,10 @@ func ReverseTransform(transformers []*parser.Trans, variable string) string {
 		if f, ok := reverserFactory[transformers[i].Tk]; ok {
 			variable = f(variable)
 		} else {
-			fmt.Printf("\033[31m%s\033[0m\n", &utils.ErrNotSupported{
-				Type: "transformation",
-				Name: parser.TransformationNameMap[transformers[i].Tk],
-			})
+			// fmt.Printf("\033[31m%s\033[0m\n", &utils.ErrNotSupported{
+			// 	Type: "transformation",
+			// 	Name: parser.TransformationNameMap[transformers[i].Tk],
+			// })
 		}
 	}
 	return variable
