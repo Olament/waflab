@@ -31,6 +31,9 @@ func GenerateTests(ruleString string, maxRetry int) (YAMLs []*test.Testfile) {
 	}
 
 	for _, rule := range rules {
+		if rule.Actions == nil || rule.Actions.Id == 0 {
+			continue
+		}
 		if rule.Actions.Chain { // Chained rule
 			log.Printf("Err chain rule %d not supported\n", rule.Actions.Id)
 			continue
