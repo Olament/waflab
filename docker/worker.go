@@ -128,8 +128,6 @@ func MakeWorker(master *Master, cli *client.Client, ctx context.Context, port st
 	w.mux.Lock()
 	defer w.mux.Unlock()
 
-	fmt.Println(port)
-
 	containerName := fmt.Sprintf("wafbench-%s", port)
 	containerID, err := getContainerByName(ctx, cli, containerName)
 	if err != nil {
