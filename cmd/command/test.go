@@ -5,11 +5,13 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/waflab/waflab/autogen/operator"
 	"github.com/waflab/waflab/docker"
 	"gopkg.in/yaml.v2"
 )
@@ -40,13 +42,13 @@ func testing(cmd *cobra.Command, args []string) {
 		if _, err := os.Stat("output"); !os.IsNotExist(err) {
 			yamlDirectory = "output"
 		} else {
-			fmt.Fprintln(os.Stderr, "You either need to supply a datasource via -g or -y or having YAML testcases avaliable at output directory!")
-			return
+			confDirectory = path.Join("repos", "coreruleset", "rules")
 		}
 	}
 
 	var yamlTestcases []string
 	if confDirectory != "" { // generate testcase from config
+		operator.WorkingDirectory = confDirectory
 		testcases, err := generateTestfile(confDirectory, int(testcaseCount))
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
