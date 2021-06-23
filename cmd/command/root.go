@@ -15,10 +15,16 @@ var rootCommand = &cobra.Command{
 
 var testcaseCount int64
 var randomSeed int64
+var omitIncompatible bool
+
+var compatibleList []string
 
 func init() {
 	rootCommand.PersistentFlags().Int64VarP(&randomSeed, "seed", "s", 41, "Define the seed used for generated each testcase. This can be used for debugging")
+	rootCommand.Flags().BoolVar(&omitIncompatible, "omit-incompatible", true, "omit potentially incompatible configuration")
 	generateCommand.Flags().Int64VarP(&testcaseCount, "count", "c", 1, "number of testcase generated for each variable")
+
+	compatibleList = []string{"920", "921", "930", "931", "932", "933", "934", "941", "942", "943"}
 }
 
 func Execute() {

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/waflab/waflab/autogen"
 	"github.com/waflab/waflab/test"
@@ -16,6 +17,9 @@ func generateTestfile(dir string, testcaseCount int) ([]*test.Testfile, error) {
 	testcases := []*test.Testfile{}
 	err := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if info.Mode().IsRegular() && filepath.Ext(path) == ".conf" {
+			if omitIncompatible && !checkCompatible(compatibleList, info.Name()) {
+				return nil
+			}
 			ruleStrings, err := autogen.ReadRuleStringFromConf(path)
 			if err != nil {
 				return err
@@ -43,4 +47,13 @@ func writeTestfile(dir string, testfiles []*test.Testfile) error {
 		}
 	}
 	return nil
+}
+
+func checkCompatible(compatibleList []string, fileName string) bool {
+	for _, c := range compatibleList {
+		if strings.Contains(fileName, c) {
+			return true
+		}
+	}
+	return false
 }
