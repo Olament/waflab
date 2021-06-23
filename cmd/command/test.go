@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -38,8 +37,12 @@ func init() {
 
 func testing(cmd *cobra.Command, args []string) {
 	if confDirectory == "" && yamlDirectory == "" {
-		// no data source supplied, use sample yaml instead
-		yamlDirectory = path.Join("sample")
+		if _, err := os.Stat("output"); !os.IsNotExist(err) {
+			yamlDirectory = "output"
+		} else {
+			fmt.Fprintln(os.Stderr, "You either need to supply a datasource via -g or -y or having YAML testcases avaliable at output directory!")
+			return
+		}
 	}
 
 	var yamlTestcases []string
