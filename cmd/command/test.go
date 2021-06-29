@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/waflab/waflab/autogen/operator"
 	"github.com/waflab/waflab/docker"
+	"github.com/waflab/waflab/parse"
+	"github.com/waflab/waflab/util"
 	"gopkg.in/yaml.v2"
 )
 
@@ -28,6 +30,7 @@ var confDirectory string
 var yamlDirectory string
 var format string
 var filter string
+var jsonPath string
 
 func init() {
 	testCommand.Flags().BoolVar(&noHost, "no-host", false, "stop appending host header of target address to testcase")
@@ -35,6 +38,22 @@ func init() {
 	testCommand.Flags().StringVarP(&yamlDirectory, "yaml", "y", "", "read testcases from yaml files")
 	testCommand.Flags().StringVar(&format, "format", "%NAME | %STATUS | %HIT", "indicate the format of result")
 	testCommand.Flags().StringVar(&filter, "filter", ".*", "specify a regular expression to filter out hitrules")
+	testCommand.Flags().StringVarP(&jsonPath, "json", "j", "repos/wafrules-drs-2.0.json", "read enabled rules in the specified json file")
+}
+
+func appendTestcases(testcases []string, title string, yamlFile string, enabledRules map[string]bool) []string {
+	if enabledRules != nil {
+		if _, ok := enabledRules[title]; ok {
+			testcases = append(testcases, yamlFile)
+			fmt.Printf("%s | included in enabled rules | added\n", title)
+		} else {
+			fmt.Printf("%s | not included in enabled rules | abandoned\n", title)
+		}
+	} else {
+		testcases = append(testcases, yamlFile)
+	}
+
+	return testcases
 }
 
 func testing(cmd *cobra.Command, args []string) {
@@ -47,6 +66,13 @@ func testing(cmd *cobra.Command, args []string) {
 	}
 
 	var yamlTestcases []string
+
+	// get enabled rules map from wafrules.json or wafrules-drs-2.0.json
+	var enabledRuleSet map[string]bool
+	if util.FileExist(jsonPath) {
+		enabledRuleSet = parse.GetEnabledRules(jsonPath)
+	}
+
 	if confDirectory != "" { // generate testcase from config
 		operator.WorkingDirectory = confDirectory
 		testcases, err := generateTestfile(confDirectory, int(testcaseCount))
@@ -55,6 +81,9 @@ func testing(cmd *cobra.Command, args []string) {
 			return
 		}
 		for _, test := range testcases {
+			t := test.Tests[0]
+			strs := strings.Split(t.TestTitle, "-")
+			testTitle := strs[0]
 			if !noHost {
 				for _, t := range test.Tests {
 					for _, stage := range t.Stages {
@@ -70,7 +99,7 @@ func testing(cmd *cobra.Command, args []string) {
 				fmt.Fprintln(os.Stderr, err)
 				return
 			}
-			yamlTestcases = append(yamlTestcases, string(out))
+			yamlTestcases = appendTestcases(yamlTestcases, testTitle, string(out), enabledRuleSet)
 		}
 	} else { // read from yaml directory
 		err := filepath.Walk(yamlDirectory, func(path string, info fs.FileInfo, err error) error {
@@ -79,7 +108,10 @@ func testing(cmd *cobra.Command, args []string) {
 				if err != nil {
 					return err
 				}
-				yamlTestcases = append(yamlTestcases, string(out))
+				re := regexp.MustCompile(`(\d+)\.yaml`)
+				strs := re.FindStringSubmatch(path)
+				testTitle := strs[1]
+				yamlTestcases = appendTestcases(yamlTestcases, testTitle, string(out), enabledRuleSet)
 			}
 			return nil
 		})

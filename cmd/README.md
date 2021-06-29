@@ -171,3 +171,14 @@ waflab test MyWAF.com -y [YAML testcase directory] --format "%NAME,%STATUS,%HIT"
 
 944250-7,403,920320 944250 949110  
 ```
+
+#### Json
+
+Json flags allows you to read enabled rules in a specified json file and only these rules will be tested
+
+```bash
+waflab test [target WAF address] --json [JSON path]
+waflab test [target WAF address] -j [JSON path]
+```
+
+By default, go "repos/wafrules-drs-2.0.json" to find the json file

@@ -25,3 +25,4 @@ commentsRouter*.go
 
 tmpFiles/
 repos/
+output/
