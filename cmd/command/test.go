@@ -9,7 +9,10 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
+	ui "github.com/gizak/termui/v3"
+	"github.com/gizak/termui/v3/widgets"
 	"github.com/spf13/cobra"
 	"github.com/waflab/waflab/autogen/operator"
 	"github.com/waflab/waflab/docker"
@@ -123,6 +126,26 @@ func testing(cmd *cobra.Command, args []string) {
 
 	master := docker.MakeMaster(5)
 	re := regexp.MustCompile(filter)
+	numsOfTestcases := len(yamlTestcases)
+	finishedTestcases := 0
+
+	if err := ui.Init(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	defer ui.Close()
+
+	list := widgets.NewList()
+	list.SelectedRowStyle = ui.NewStyle(ui.ColorYellow)
+
+	progress := widgets.NewGauge()
+	progress.BarColor = ui.ColorCyan
+
+	grid := ui.NewGrid()
+	termWidth, termHeight := ui.TerminalDimensions()
+	grid.SetRect(0, 0, termWidth, termHeight)
+	grid.Set(ui.NewRow(9.0/10, list), ui.NewRow(1.0/10, progress))
+
+	startTime := time.Now()
 
 	for _, y := range yamlTestcases {
 		results, err := master.InsertTask(args[0], y)
@@ -136,7 +159,28 @@ func testing(cmd *cobra.Command, args []string) {
 				"%STATUS", res.Status,
 				"%HIT", strings.Join(re.FindAllString(res.HitRule, -1), " "),
 			)
-			fmt.Println(replacer.Replace(format))
+			list.Rows = append(list.Rows, replacer.Replace(format))
+			list.ScrollBottom()
 		}
+		curTime := time.Now()
+		finishedTestcases++
+		progress.Percent = int((float64(finishedTestcases) / float64(numsOfTestcases)) * 100)
+		progress.Label = fmt.Sprintf("%d/%d, %.2f rps", finishedTestcases, numsOfTestcases, float64(finishedTestcases)/float64(curTime.Sub(startTime).Seconds()))
+		ui.Render(grid)
+	}
+
+	uiEvents := ui.PollEvents()
+	for {
+		e := <-uiEvents
+		switch e.ID {
+		case "q":
+			return
+		case "<Down>":
+			list.ScrollDown()
+		case "<Up>":
+			list.ScrollUp()
+		}
+
+		ui.Render(list)
 	}
 }
