@@ -161,6 +161,8 @@ func testing(cmd *cobra.Command, args []string) {
 
 	startTime := time.Now()
 
+	uiEvents := ui.PollEvents()
+
 	for _, y := range yamlTestcases {
 		results, err := master.InsertTask(args[0], y)
 		if err != nil {
@@ -200,13 +202,22 @@ func testing(cmd *cobra.Command, args []string) {
 		progress.Percent = int((float64(finishedTestcases) / float64(numsOfTestcases)) * 100)
 		progress.Label = fmt.Sprintf("%d/%d, %.2f rps", finishedTestcases, numsOfTestcases, float64(finishedTestcases)/float64(curTime.Sub(startTime).Seconds()))
 		ui.Render(grid)
+
+		select {
+		case e := <-uiEvents:
+			switch e.ID {
+			case "q", "<C-c>":
+				return
+			}
+		default:
+			// do nothing
+		}
 	}
 
-	uiEvents := ui.PollEvents()
 	for {
 		e := <-uiEvents
 		switch e.ID {
-		case "q":
+		case "q", "<C-c>":
 			return
 		case "<Down>":
 			list.ScrollDown()
