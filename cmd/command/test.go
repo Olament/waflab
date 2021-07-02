@@ -17,6 +17,7 @@ import (
 	"github.com/waflab/waflab/autogen/operator"
 	"github.com/waflab/waflab/docker"
 	"github.com/waflab/waflab/parse"
+	"github.com/waflab/waflab/test"
 	"github.com/waflab/waflab/util"
 	"gopkg.in/yaml.v2"
 )
@@ -39,7 +40,7 @@ func init() {
 	testCommand.Flags().BoolVar(&noHost, "no-host", false, "stop appending host header of target address to testcase")
 	testCommand.Flags().StringVarP(&confDirectory, "config", "g", "", "generate testcases from WAF rules")
 	testCommand.Flags().StringVarP(&yamlDirectory, "yaml", "y", "", "read testcases from yaml files")
-	testCommand.Flags().StringVar(&format, "format", "%NAME | %STATUS | %HIT", "indicate the format of result")
+	testCommand.Flags().StringVar(&format, "format", "%NAME | %STATUS | %HIT | %EXPECTED_STAT | %HT_MATCH | %STAT_MATCH", "indicate the format of result")
 	testCommand.Flags().StringVar(&filter, "filter", ".*", "specify a regular expression to filter out hitrules")
 	testCommand.Flags().StringVarP(&jsonPath, "json", "j", "repos/wafrules-drs-2.0.json", "read enabled rules in the specified json file")
 }
@@ -76,7 +77,8 @@ func testing(cmd *cobra.Command, args []string) {
 		enabledRuleSet = parse.GetEnabledRules(jsonPath)
 	}
 
-	if confDirectory != "" { // generate testcase from config
+	titleStatusMap := map[string][]int{} // title to corresponding status code
+	if confDirectory != "" {             // generate testcase from config
 		operator.WorkingDirectory = confDirectory
 		testcases, err := generateTestfile(confDirectory, int(testcaseCount))
 		if err != nil {
@@ -87,13 +89,16 @@ func testing(cmd *cobra.Command, args []string) {
 			t := test.Tests[0]
 			strs := strings.Split(t.TestTitle, "-")
 			testTitle := strs[0]
-			if !noHost {
-				for _, t := range test.Tests {
-					for _, stage := range t.Stages {
+			for _, t := range test.Tests {
+				for index, stage := range t.Stages {
+					if !noHost {
 						if stage.Stage.Input.Headers == nil {
 							stage.Stage.Input.Headers = make(map[string]interface{})
 						}
 						stage.Stage.Input.Headers["Host"] = args[0]
+					}
+					if index == 0 {
+						titleStatusMap[t.TestTitle] = stage.Stage.Output.Status
 					}
 				}
 			}
@@ -110,6 +115,15 @@ func testing(cmd *cobra.Command, args []string) {
 				out, err := ioutil.ReadFile(path)
 				if err != nil {
 					return err
+				}
+				t := test.Testfile{}
+				yaml.Unmarshal(out, &t)
+				for _, t := range t.Tests {
+					for index, stage := range t.Stages {
+						if index == 0 {
+							titleStatusMap[t.TestTitle] = stage.Stage.Output.Status
+						}
+					}
 				}
 				re := regexp.MustCompile(`(\d+)\.yaml`)
 				strs := re.FindStringSubmatch(path)
@@ -147,6 +161,8 @@ func testing(cmd *cobra.Command, args []string) {
 
 	startTime := time.Now()
 
+	uiEvents := ui.PollEvents()
+
 	for _, y := range yamlTestcases {
 		results, err := master.InsertTask(args[0], y)
 		if err != nil {
@@ -154,10 +170,29 @@ func testing(cmd *cobra.Command, args []string) {
 			return
 		}
 		for _, res := range results {
+			var expectedStatus string = ""
+			var hitMatch string = ""
+			var statusMatch string = ""
+			if status, okay := titleStatusMap[res.Title]; okay {
+				expectedStatus = fmt.Sprint(status)
+			}
+			if strings.Contains(expectedStatus, res.Status) && res.Status != "" {
+				statusMatch = "YES"
+			} else {
+				statusMatch = "NO"
+			}
+			if strings.Contains(res.HitRule, strings.Split(res.Title, "-")[0]) {
+				hitMatch = "YES"
+			} else {
+				hitMatch = "NO"
+			}
 			replacer := strings.NewReplacer(
 				"%NAME", res.Title,
 				"%STATUS", res.Status,
 				"%HIT", strings.Join(re.FindAllString(res.HitRule, -1), " "),
+				"%EXPECTED_STAT", expectedStatus,
+				"%HT_MATCH", hitMatch,
+				"%STAT_MATCH", statusMatch,
 			)
 			list.Rows = append(list.Rows, replacer.Replace(format))
 			list.ScrollBottom()
@@ -167,13 +202,22 @@ func testing(cmd *cobra.Command, args []string) {
 		progress.Percent = int((float64(finishedTestcases) / float64(numsOfTestcases)) * 100)
 		progress.Label = fmt.Sprintf("%d/%d, %.2f rps", finishedTestcases, numsOfTestcases, float64(finishedTestcases)/float64(curTime.Sub(startTime).Seconds()))
 		ui.Render(grid)
+
+		select {
+		case e := <-uiEvents:
+			switch e.ID {
+			case "q", "<C-c>":
+				return
+			}
+		default:
+			// do nothing
+		}
 	}
 
-	uiEvents := ui.PollEvents()
 	for {
 		e := <-uiEvents
 		switch e.ID {
-		case "q":
+		case "q", "<C-c>":
 			return
 		case "<Down>":
 			list.ScrollDown()
