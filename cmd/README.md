@@ -2,6 +2,26 @@
 
 WAFLab-ClI offers an command line interface for generating testcase and testing Web Application Firwall
 
+## Run inside Docker
+
+First build the Docker image
+
+```bash
+# IMPORT:
+# You must at project directory not cmd directory
+cd waflab
+docker build -t <IMAGE NAME> -f .\cmd\Dockerfile .
+```
+
+Run commands using with built image
+
+```bash
+ docker run \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  <IMAGE NAME> \
+  <WAFLAB COMMAND>
+```
+
 ## waflab
 
 The entrypoint of the command line interface
