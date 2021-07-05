@@ -1,6 +1,7 @@
 package command
 
 import (
+	"bufio"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
@@ -35,6 +36,7 @@ var yamlDirectory string
 var format string
 var filter string
 var jsonPath string
+var logPath string
 
 func init() {
 	testCommand.Flags().BoolVar(&noHost, "no-host", false, "stop appending host header of target address to testcase")
@@ -43,6 +45,7 @@ func init() {
 	testCommand.Flags().StringVar(&format, "format", "%NAME | %STATUS | %HIT | %EXPECTED_STAT | %HT_MATCH | %STAT_MATCH", "indicate the format of result")
 	testCommand.Flags().StringVar(&filter, "filter", ".*", "specify a regular expression to filter out hitrules")
 	testCommand.Flags().StringVarP(&jsonPath, "json", "j", "repos/wafrules-drs-2.0.json", "read enabled rules in the specified json file")
+	testCommand.Flags().StringVar(&logPath, "log", "", "log file path for log_contains and nolog_contains")
 }
 
 func appendTestcases(testcases []string, title string, yamlFile string, enabledRules map[string]bool) []string {
@@ -77,8 +80,8 @@ func testing(cmd *cobra.Command, args []string) {
 		enabledRuleSet = parse.GetEnabledRules(jsonPath)
 	}
 
-	titleStatusMap := map[string][]int{} // title to corresponding status code
-	if confDirectory != "" {             // generate testcase from config
+	titleOutputMap := map[string]*test.Output{} // title to corresponding status code
+	if confDirectory != "" {                    // generate testcase from config
 		operator.WorkingDirectory = confDirectory
 		testcases, err := generateTestfile(confDirectory, int(testcaseCount))
 		if err != nil {
@@ -98,7 +101,7 @@ func testing(cmd *cobra.Command, args []string) {
 						stage.Stage.Input.Headers["Host"] = args[0]
 					}
 					if index == 0 {
-						titleStatusMap[t.TestTitle] = stage.Stage.Output.Status
+						titleOutputMap[t.TestTitle] = stage.Stage.Output
 					}
 				}
 			}
@@ -121,7 +124,7 @@ func testing(cmd *cobra.Command, args []string) {
 				for _, t := range t.Tests {
 					for index, stage := range t.Stages {
 						if index == 0 {
-							titleStatusMap[t.TestTitle] = stage.Stage.Output.Status
+							titleOutputMap[t.TestTitle] = stage.Stage.Output
 						}
 					}
 				}
@@ -173,8 +176,10 @@ func testing(cmd *cobra.Command, args []string) {
 			var expectedStatus string = ""
 			var hitMatch string = ""
 			var statusMatch string = ""
-			if status, okay := titleStatusMap[res.Title]; okay {
-				expectedStatus = fmt.Sprint(status)
+			var logMatch string = ""
+			var noLogMatch string = ""
+			if status, okay := titleOutputMap[res.Title]; okay {
+				expectedStatus = fmt.Sprint(status.Status)
 			}
 			if strings.Contains(expectedStatus, res.Status) && res.Status != "" {
 				statusMatch = "YES"
@@ -186,6 +191,26 @@ func testing(cmd *cobra.Command, args []string) {
 			} else {
 				hitMatch = "NO"
 			}
+			if titleOutputMap[res.Title].LogContains != "" {
+				okay, err := logContains(titleOutputMap[res.Title].LogContains, logPath)
+				if err == nil {
+					if okay {
+						logMatch = "YES"
+					} else {
+						logMatch = "NO"
+					}
+				}
+			}
+			if titleOutputMap[res.Title].NoLogContains != "" {
+				okay, err := logContains(titleOutputMap[res.Title].NoLogContains, logPath)
+				if err == nil {
+					if okay {
+						logMatch = "NO"
+					} else {
+						logMatch = "YES"
+					}
+				}
+			}
 			replacer := strings.NewReplacer(
 				"%NAME", res.Title,
 				"%STATUS", res.Status,
@@ -193,6 +218,8 @@ func testing(cmd *cobra.Command, args []string) {
 				"%EXPECTED_STAT", expectedStatus,
 				"%HT_MATCH", hitMatch,
 				"%STAT_MATCH", statusMatch,
+				"%LOG_MATCH", logMatch,
+				"%NOLG_MATCH", noLogMatch,
 			)
 			list.Rows = append(list.Rows, replacer.Replace(format))
 			list.ScrollBottom()
@@ -227,4 +254,16 @@ func testing(cmd *cobra.Command, args []string) {
 
 		ui.Render(list)
 	}
+}
+
+// mimicing ftw's log_contains options
+// check if a log contains any substring that match the supplied regular expression
+func logContains(expression string, logPath string) (bool, error) {
+	re := regexp.MustCompile(expression)
+	f, err := os.Open(logPath)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+	return re.MatchReader(bufio.NewReader(f)), nil
 }
