@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/waflab/waflab/autogen"
+	"github.com/waflab/waflab/autogen/operator"
+	"github.com/waflab/waflab/autogen/utils"
 	"github.com/waflab/waflab/test"
 	"gopkg.in/yaml.v2"
 )
@@ -23,6 +25,10 @@ func generateTestfile(dir string, testcaseCount int) ([]*test.Testfile, error) {
 			ruleStrings, err := autogen.ReadRuleStringFromConf(path)
 			if err != nil {
 				return err
+			}
+			utils.SetRandomSeed(randomSeed)
+			if regexPerf {
+				operator.LongestStringPossible = true
 			}
 			testcases = append(testcases, autogen.GenerateTests(ruleStrings, int(testcaseCount))...)
 		}
