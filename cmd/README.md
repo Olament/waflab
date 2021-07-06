@@ -1,39 +1,49 @@
 # WAFLab-CLI
 
-WAFLab-ClI offers an command line interface for generating testcase and testing Web Application Firwall
+WAFLab-CLI is the CLI (Command Line Interface) for WAFLab.
 
-## Run inside Docker
+## User Guide
 
-You can either use the existing image from our Docker repo or build your own image from souce.
-
-**Build from souce**
-
-First build the Docker image
-
-```bash
-# IMPORT:
-# You must at project directory not cmd directory
-cd waflab
-docker build -t <IMAGE NAME> -f .\cmd\Dockerfile .
-```
-
-**Use existing docker image**
+1. Pull the image from Docker Hub: https://hub.docker.com/r/waflab/waflabcli
 
 ```bash
 docker pull waflab/waflabcli
 ```
 
-Run commands using with built image
+2. Run WAFLab-CLI in single-command mode..
 
 ```bash
- docker run \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -e CONTAINER=1 \
-  --network=host \ 
-  -it \
-  waflab/waflabcli \
-  /bin/bash
+docker run -v /var/run/docker.sock:/var/run/docker.sock -e CONTAINER=1 --network=host -it waflab/waflabcli /bin/bash
 ```
+
+3. (Optional) Run WAFLab-CLI in interactive mode.
+
+```bash
+docker run -v /var/run/docker.sock:/var/run/docker.sock -e CONTAINER=1 --network=host -it waflab/waflabcli /bin/bash
+```
+
+## Developer Guide
+
+1. Build Docker image.
+
+```bash
+# Run inside this repo's root folder: / instead of /cmd
+docker build -t waflab/waflabcli -f .\cmd\Dockerfile .
+```
+
+2. Log into Docker Hub (the account should have permission to push to "waflab" organization).
+
+```bash
+docker login
+```
+
+3. Push the built image to Docker Hub: https://hub.docker.com/r/waflab/waflabcli
+
+```bash
+docker push waflab/waflabcli
+```
+
+# Command References
 
 ## waflab
 
@@ -45,9 +55,9 @@ The entrypoint of the command line interface
 waflab generate [WAF rule files directory] [output directory]
 ```
 
-waflab generate will recurisively read ModSecurity configuration file from a directory and then write the generated ftw-compatible yaml testcase to another directory  
+waflab generate will recurisively read ModSecurity configuration file from a directory and then write the generated ftw-compatible yaml testcase to another directory
 
-### Avaliable flags
+### Available flags
 
 #### Count
 
@@ -121,7 +131,7 @@ waflab generate [WAF rule directory] [output directory] -s 41
 waflab test [target WAF address]
 ```
 
-waflab test use the ftw-compatible tool to send the existing testcase from data source or generated testcase from the ModSecurity configs to the target WAF server. 
+waflab test use the ftw-compatible tool to send the existing testcase from data source or generated testcase from the ModSecurity configs to the target WAF server.
 
 Example usage
 
@@ -139,9 +149,9 @@ waflab test mywaf.com -y [YAML testcase directory]
 
 Notice that you must specify a data source for testcase either using ```-g``` or ```-y```
 
-### Avaliable flags
+### Available flags
 
-#### Config 
+#### Config
 
 Use ModSecurity configuration files as the data source for the test
 
@@ -159,7 +169,7 @@ waflab test [target WAF address] --yaml [YAML testcase directory]
 waflab test [target WAF address] -y [YAML testcase directory]
 ```
 
-#### Filter 
+#### Filter
 
 Pass a regular expression to filter out hitrules. By default, the filter is set to .*, meaning that we do not filter out anything at all.
 
@@ -177,9 +187,9 @@ we can filter out necessary information with regular expression ```\d{2,}``` and
 
 By default, each matched group will separate by a single space.
 
-#### Format 
+#### Format
 
-format flags allows you to reorganize the ouput result and even omit certain entry you do not interested. 
+format flags allows you to reorganize the ouput result and even omit certain entry you do not interested.
 
 Reorder the output entry
 
@@ -219,7 +229,7 @@ By default, go "repos/wafrules-drs-2.0.json" to find the json file
 
 #### LOG
 
-LOG flags specify the file path for WAFLab-CLI to read the log files when you supplied your own yaml files that contains the ```log_contains``` and ```no_log_contains``` in the ```output``` section. Notice that since we do not show the result of ```log_contains``` and ```no_log_contains``` by default, you need to specify you own output format 
+LOG flags specify the file path for WAFLab-CLI to read the log files when you supplied your own yaml files that contains the ```log_contains``` and ```no_log_contains``` in the ```output``` section. Notice that since we do not show the result of ```log_contains``` and ```no_log_contains``` by default, you need to specify you own output format
 
 ```bash
 waflab test [Target WAF address] -y [YAML testcase directory] --format "%NAME | %HIT | %STATUS | %LOG_MATCH | %NOLG_MATCH" 
