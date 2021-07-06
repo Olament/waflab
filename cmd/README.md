@@ -4,6 +4,10 @@ WAFLab-ClI offers an command line interface for generating testcase and testing 
 
 ## Run inside Docker
 
+You can either use the existing image from our Docker repo or build your own image from souce.
+
+**Build from souce**
+
 First build the Docker image
 
 ```bash
@@ -11,6 +15,12 @@ First build the Docker image
 # You must at project directory not cmd directory
 cd waflab
 docker build -t <IMAGE NAME> -f .\cmd\Dockerfile .
+```
+
+**Use existing docker image**
+
+```bash
+docker pull waflab/waflabcli
 ```
 
 Create network
@@ -27,7 +37,7 @@ Run commands using with built image
   -e CONTAINER=1 \
   --network=wafnet \ 
   -it \
-  <IMAGE NAME> \
+  waflab/waflabcli \
   /bin/bash
 ```
 
