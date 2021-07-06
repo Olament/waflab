@@ -211,3 +211,12 @@ waflab test [target WAF address] -j [JSON path]
 ```
 
 By default, go "repos/wafrules-drs-2.0.json" to find the json file
+
+
+#### LOG
+
+LOG flags specify the file path for WAFLab-CLI to read the log files when you supplied your own yaml files that contains the ```log_contains``` and ```no_log_contains``` in the ```output``` section. Notice that since we do not show the result of ```log_contains``` and ```no_log_contains``` by default, you need to specify you own output format 
+
+```bash
+waflab test [Target WAF address] -y [YAML testcase directory] --format "%NAME | %HIT | %STATUS | %LOG_MATCH | %NOLG_MATCH" 
+```
