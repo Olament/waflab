@@ -41,6 +41,44 @@ const (
 )
 
 var ErrFailedGeneration = errors.New("autogen/operator: Unable to generation string from regexp")
+var LongestStringPossible bool = false
+
+func length(re *syntax.Regexp) int {
+	op := re.Op
+	switch op {
+	case syntax.OpNoMatch:
+	case syntax.OpEmptyMatch:
+	case syntax.OpLiteral:
+		return len(re.Rune)
+	case syntax.OpCharClass:
+		return 1
+	case syntax.OpAnyCharNotNL, syntax.OpAnyChar:
+		return 1
+	case syntax.OpBeginLine:
+	case syntax.OpEndLine:
+	case syntax.OpBeginText:
+	case syntax.OpEndText:
+	case syntax.OpWordBoundary:
+	case syntax.OpNoWordBoundary:
+	case syntax.OpCapture:
+		return length(re.Sub0[0])
+	case syntax.OpStar, syntax.OpPlus, syntax.OpQuest, syntax.OpRepeat, syntax.OpConcat:
+		l := 0
+		for _, r := range re.Sub {
+			l += length(r)
+		}
+		return l * 10
+	case syntax.OpAlternate:
+		l := 0
+		for _, r := range re.Sub {
+			l = max(l, length(r))
+		}
+		return l
+	default:
+		panic("unhandled operator")
+	}
+	return 0
+}
 
 func generate(re *syntax.Regexp) []rune {
 	//fmt.Println("re:", re, "sub:", re.Sub)
@@ -51,9 +89,7 @@ func generate(re *syntax.Regexp) []rune {
 		return []rune{}
 	case syntax.OpLiteral:
 		res := []rune{}
-		for _, r := range re.Rune {
-			res = append(res, r)
-		}
+		res = append(res, re.Rune...)
 		return res
 	case syntax.OpCharClass:
 		// number of possible chars
@@ -164,6 +200,17 @@ func generate(re *syntax.Regexp) []rune {
 		}
 		return res
 	case syntax.OpAlternate:
+		if LongestStringPossible {
+			index, value := 0, 0
+			for i, r := range re.Sub {
+				curr := length(r)
+				if curr > value {
+					index = i
+					value = curr
+				}
+			}
+			return generate(re.Sub[index])
+		}
 		i := utils.RandomIntWithRange(0, len(re.Sub))
 		return generate(re.Sub[i])
 	default:
@@ -208,4 +255,11 @@ func GenerateStringFromRegex(expression string, not bool, flag int) (res string,
 	}
 
 	return res, nil
+}
+
+func max(num1 int, num2 int) int {
+	if num1 > num2 {
+		return num1
+	}
+	return num2
 }
