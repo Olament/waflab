@@ -9,11 +9,11 @@ services:
     ports: 
       - 7070:7070
     networks: 
-      - wafnet
+      - host
   frontend:
     build: web/
     ports: 
       - 7000:80
-networks: 
-    wafnet:
-        name: wafnet
+networks:
+  host:
+      name: host

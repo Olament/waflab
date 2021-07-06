@@ -23,19 +23,13 @@ docker build -t <IMAGE NAME> -f .\cmd\Dockerfile .
 docker pull waflab/waflabcli
 ```
 
-Create network
-
-```bash
-docker network create wafnet
-```
-
 Run commands using with built image
 
 ```bash
  docker run \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -e CONTAINER=1 \
-  --network=wafnet \ 
+  --network=host \ 
   -it \
   waflab/waflabcli \
   /bin/bash

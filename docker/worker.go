@@ -165,7 +165,7 @@ func MakeWorker(master *Master, cli *client.Client, ctx context.Context, port st
 		containerID = resp.ID
 
 		if os.Getenv("CONTAINER") == "1" {
-			if err := cli.NetworkConnect(ctx, "wafnet", containerID, nil); err != nil {
+			if err := cli.NetworkConnect(ctx, "host", containerID, nil); err != nil {
 				return nil, err
 			}
 		}
