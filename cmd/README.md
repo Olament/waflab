@@ -4,29 +4,31 @@ WAFLab-CLI is the CLI (Command Line Interface) for WAFLab.
 
 ## User Guide
 
-1. Pull the image from Docker Hub: https://hub.docker.com/r/waflab/waflabcli
+Note: The following commands may download the [waflab/waflabcli](https://hub.docker.com/r/waflab/waflabcli) image from Docker Hub at the first time if it does not exist in the local machine.
 
-```bash
-docker pull waflab/waflabcli
-```
+### Single-Command Mode
 
-2. Run WAFLab-CLI in single-command mode..
+Run the following command to directly run WAFLab-CLI to test the endpoint, replace `10.150.147.66:8080` with your own endpoint to test.
 
 ```bash
 docker run -v /var/run/docker.sock:/var/run/docker.sock --network=host -it --rm waflab/waflabcli go run cmd/main.go test 10.150.147.66:8080
 ```
 
-3. (Optional) Run WAFLab-CLI in interactive mode.
+### Interactive Mode
+
+Run the following command to enter the bash of WAFLab-CLI container.
 
 ```bash
 docker run -v /var/run/docker.sock:/var/run/docker.sock --network=host -it --rm waflab/waflabcli /bin/bash
 ```
 
-Then run any command to interact with the WAFLab-CLI:
+Run the following command to run WAFLab-CLI to test the endpoint, replace `10.150.147.66:8080` with your own endpoint to test.
 
 ```bash
 go run cmd/main.go test 10.150.147.66:8080
 ```
+
+You can also try other commands from the [Command References](#command-references).
 
 ## Developer Guide
 
