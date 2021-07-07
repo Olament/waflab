@@ -13,13 +13,19 @@ docker pull waflab/waflabcli
 2. Run WAFLab-CLI in single-command mode..
 
 ```bash
-docker run -v /var/run/docker.sock:/var/run/docker.sock -e CONTAINER=1 --network=host -it waflab/waflabcli /bin/bash
+docker run -v /var/run/docker.sock:/var/run/docker.sock --network=host -it --rm waflab/waflabcli go run cmd/main.go test 10.150.147.66:8080
 ```
 
 3. (Optional) Run WAFLab-CLI in interactive mode.
 
 ```bash
-docker run -v /var/run/docker.sock:/var/run/docker.sock -e CONTAINER=1 --network=host -it waflab/waflabcli /bin/bash
+docker run -v /var/run/docker.sock:/var/run/docker.sock --network=host -it --rm waflab/waflabcli /bin/bash
+```
+
+Then run any command to interact with the WAFLab-CLI:
+
+```bash
+go run cmd/main.go test 10.150.147.66:8080
 ```
 
 ## Developer Guide
